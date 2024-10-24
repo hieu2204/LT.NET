@@ -1,23 +1,22 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Forms;
 
-namespace baitap11_9
+namespace QuanLySanPham
 {
-    internal class Program
+    internal static class Program
     {
-        static void Main(string[] args)
+        /// <summary>
+        /// The main entry point for the application.
+        /// </summary>
+        [STAThread]
+        static void Main()
         {
-            BaiTap baitap = new BaiTap();
-            baitap.BaiTap1();
-            baitap.BaiTap2();
-            baitap.BaiTap3();
-            baitap.BaiTap4();
-            baitap.BaiTap5();
-            baitap.BaiTap6();
-            Console.ReadKey();
+            Application.EnableVisualStyles();
+            Application.SetCompatibleTextRenderingDefault(false);
+            Application.Run(new Form1());
         }
     }
 }
