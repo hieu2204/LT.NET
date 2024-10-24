@@ -1,192 +1,221 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Drawing;
+using System.Linq;
+using System.Net.Mail;
+using System.Text;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 
-namespace QuanLySanPham
+namespace QuanLyThongTinSinhVien
 {
+    
     public partial class Form1 : Form
     {
-        private List<SanPham> danhsachsanpham = new List<SanPham>();
-
+        List<QuanLySinhVien> lst = new List<QuanLySinhVien>();
         public Form1()
         {
             InitializeComponent();
-        //    tb1.AllowUserToAddRows = false;   // Disable auto-adding new rows
-            tb1.CellMouseClick += selectedRow;  // Event for selecting a row
-            btnXoa.Click += btnXoa_Click;       // Gắn sự kiện nhấn vào nút "Xóa"
-                                                // Định nghĩa các cột cho DataGridView (chỉ nếu chưa được định nghĩa)
-            tb1.ColumnCount = 7;
-            tb1.Columns[0].Name = "Mã SP";
-            tb1.Columns[1].Name = "Tên SP";
-            tb1.Columns[2].Name = "Đơn Giá";
-            tb1.Columns[3].Name = "Hình Ảnh";
-            tb1.Columns[4].Name = "Mô Tả Ngắn";
-            tb1.Columns[5].Name = "Mô Tả Chi Tiết";
-            tb1.Columns[6].Name = "Loại SP";
-
-            // Khởi tạo DataGridView với dữ liệu hiện tại
-            UpdateGrid();
         }
 
-        private void Form1_Load(object sender, EventArgs e)
-        {
-            UpdateGrid();  // Initialize DataGridView with current data
-        }
-
-        // Nút Thêm sản phẩm
         private void btnThem_Click(object sender, EventArgs e)
         {
-            string Ma = textBox1.Text;
-            string Ten = textBox2.Text;
-            string Gia = textBox3.Text;
-            string hinhanh = textBox4.Text;
-            string motangan = textBox5.Text;
-            string motachitiet = textBox6.Text;
-            string loaisp = comboBox1.Text;
-
-            if (string.IsNullOrEmpty(Ma) || string.IsNullOrEmpty(Ten) || string.IsNullOrEmpty(Gia) ||
-                string.IsNullOrEmpty(hinhanh) || string.IsNullOrEmpty(motangan) || string.IsNullOrEmpty(motachitiet))
+            QuanLySinhVien quanLySinhVien = new QuanLySinhVien();
+            if (KiemTraDuLieu())
             {
-                MessageBox.Show("Vui lòng nhập đầy đủ thông tin");
+                MessageBox.Show("Dữ liệu hợp lệ. Đã thêm sinh viên.");
+                quanLySinhVien.MaSV = txtMa.Text;
+                quanLySinhVien.HoTen = txtTen.Text;
+                quanLySinhVien.NgaySinh = txtNgaysinh.Text;
+                quanLySinhVien.GioiTinh = cbGioitinh.Text;
+                quanLySinhVien.Khoa = cbKhoa.Text;
+                quanLySinhVien.DiaChi = txtDiachi.Text;
+                quanLySinhVien.Email = txtEmail.Text;
+                quanLySinhVien.Sdt = txtSdt.Text;
+                lst.Add(quanLySinhVien);
+                dataGridView1.DataSource = null;
+                dataGridView1.DataSource = lst;
             }
-            else
+
+        }
+
+        // Check input 
+        private bool KiemTraDuLieu()
+        {
+            string masv = txtMa.Text;
+            string tensv = txtTen.Text;
+            string ngaysinh = txtNgaysinh.Text;
+            string gioitinh = cbGioitinh.Text;
+            string khoa = cbKhoa.Text;
+            string diachi = txtDiachi.Text;
+            string email = txtEmail.Text;
+            string sdt = txtSdt.Text;
+
+            
+            // Kiểm tra mã sinh viên
+            if(string.IsNullOrEmpty(masv))
             {
-                SanPham sanPham = new SanPham
+                MessageBox.Show("Vui lòng nhập Mã sinh viên.");
+                txtMa.Text = "";
+                return false;
+            }
+            // Kiểm tra tên
+            if(string.IsNullOrEmpty(tensv))
+            {
+                MessageBox.Show("Vui lòng nhập Tên sinh viên.");
+                txtTen.Text = "";
+                return false;
+            }
+            // Kiểm tra ngày sinh
+            try
+            {
+                DateTime tempDate = DateTime.ParseExact(ngaysinh, "dd/MM/yyyy", System.Globalization.CultureInfo.InvariantCulture);
+                if (tempDate > DateTime.Now)
                 {
-                    MaSP = Ma,
-                    TenSP = Ten,
-                    DonGia = Gia,
-                    HinhAnh = hinhanh,
-                    MoTaNgan = motangan,
-                    MoTaChiTiet = motachitiet,
-                    LoaiSP = loaisp
-                };
-
-                danhsachsanpham.Add(sanPham);
-                UpdateGrid();
-                SelectLastRow();  // Select last row after adding
-                ResetFields();
+                    MessageBox.Show("Ngày sinh không thể là một ngày tương lai.");
+                    txtNgaysinh.Text = "";
+                    return false;
+                }
             }
+            catch (FormatException)
+            {
+                MessageBox.Show("Vui lòng nhập theo định dạng dd/MM/yyyy.");
+                txtNgaysinh.Text = "";
+                return false;
+            }
+            // Kiểm tra giới tính
+            if (string.IsNullOrEmpty(gioitinh))
+            {
+                MessageBox.Show("Vui lòng chọn giới tính");
+                cbGioitinh.Text = "";
+                return false;
+            }
+            // Kiểm tra khoa
+            if (string.IsNullOrEmpty(khoa))
+            {
+                MessageBox.Show("Vui lòng chọn khoa.");
+                cbKhoa.Text = "";
+                return false;
+            }
+            // Kiểm tra địa chỉ
+            if (string.IsNullOrEmpty(diachi))
+            {
+                MessageBox.Show("Vui lòng nhập địa chỉ");
+                txtDiachi.Text = "";
+                return false;
+            }
+            // Kiểm tra email
+            try
+            {
+                MailAddress mailAddress = new MailAddress(email);
+            }
+            catch (FormatException)
+            {
+                MessageBox.Show("Địa chỉ email không hợp lệ.\n Vui lòng nhập lại.\n example@gmail.com");
+                txtEmail.Text = ""; 
+                return false; 
+            }
+
+            // kiểm tra số điện thoại
+            if (string.IsNullOrEmpty(sdt))
+            {
+                MessageBox.Show("Vui lòng nhập số điện thoại.");
+                txtSdt.Text = "";
+                return false;
+            }
+            foreach(char c in sdt)
+            {
+                if (!char.IsDigit(c))
+                {
+                    MessageBox.Show("Số điện thoại chỉ được nhập các chữ số.");
+                    return false;
+                }
+            }
+            return true;
         }
 
-        // Nút Sửa sản phẩm
-        private void btnSua_Click(object sender, EventArgs e)
-        {
-            if (tb1.SelectedRows.Count > 0 && tb1.SelectedRows[0].Index >= 0)
-            {
-                int selectedIndex = tb1.SelectedRows[0].Index;
-
-                // Get the selected product
-                SanPham selectedSanPham = danhsachsanpham[selectedIndex];
-
-                // Update product information
-                selectedSanPham.MaSP = textBox1.Text;
-                selectedSanPham.TenSP = textBox2.Text;
-                selectedSanPham.DonGia = textBox3.Text;
-                selectedSanPham.HinhAnh = textBox4.Text;
-                selectedSanPham.MoTaNgan = textBox5.Text;
-                selectedSanPham.MoTaChiTiet = textBox6.Text;
-                selectedSanPham.LoaiSP = comboBox1.Text;
-
-                UpdateGrid();
-                MessageBox.Show("Sản phẩm đã được cập nhật.");
-                ResetFields();
-            }
-            else
-            {
-                MessageBox.Show("Vui lòng chọn sản phẩm hợp lệ để sửa.");
-            }
-        }
-
-        // Nút Xóa sản phẩm
-        private void btnXoa_Click(object sender, EventArgs e)
-        {
-            if (tb1.SelectedRows.Count > 0 && tb1.SelectedRows[0].Index >= 0)
-            {
-                int selectedIndex = tb1.SelectedRows[0].Index;
-
-                // Remove the selected product from the list
-                danhsachsanpham.RemoveAt(selectedIndex);
-
-                // Update the DataGridView to reflect the changes
-                UpdateGrid();
-
-                MessageBox.Show("Sản phẩm đã được xóa.");
-
-                // Optionally reset the input fields after deletion
-                ResetFields();
-            }
-            else
-            {
-                MessageBox.Show("Vui lòng chọn sản phẩm hợp lệ để xóa.");
-            }
-        }
-
-
-        // Sự kiện khi chọn hàng trong DataGridView
-        private void selectedRow(object sender, DataGridViewCellMouseEventArgs e)
-        {
-            if (e.RowIndex >= 0 && e.RowIndex < danhsachsanpham.Count)
-            {
-                SanPham selectedSanPham = danhsachsanpham[e.RowIndex];
-
-                // Populate text boxes
-                textBox1.Text = selectedSanPham.MaSP;
-                textBox2.Text = selectedSanPham.TenSP;
-                textBox3.Text = selectedSanPham.DonGia;
-                textBox4.Text = selectedSanPham.HinhAnh;
-                textBox5.Text = selectedSanPham.MoTaNgan;
-                textBox6.Text = selectedSanPham.MoTaChiTiet;
-                comboBox1.Text = selectedSanPham.LoaiSP;
-            }
-            else
-            {
-                MessageBox.Show("Vui lòng chọn một hàng hợp lệ.");
-            }
-        }
-
-        // Nút Đặt lại các ô nhập liệu
         private void btnReset_Click(object sender, EventArgs e)
         {
-            ResetFields();
+            txtMa.Text = "";
+            txtTen.Text = "";
+            txtNgaysinh.Text = "";
+            txtDiachi.Text = "";
+            txtEmail.Text = "";
+            cbKhoa.Text = "";
+            cbGioitinh.Text = "";
+            txtSdt.Text = "";
         }
 
-        // Hàm đặt lại các ô nhập liệu
-        private void ResetFields()
+        private void dataGridView1_CellClick(object sender, DataGridViewCellEventArgs e)
         {
-            textBox1.Text = "";
-            textBox2.Text = "";
-            textBox3.Text = "";
-            textBox4.Text = "";
-            textBox5.Text = "";
-            textBox6.Text = "";
-            comboBox1.Text = "";
-        }
-
-        // Cập nhật DataGridView bằng cách thêm các hàng từ danh sách sản phẩm
-        private void UpdateGrid()
-        {
-            tb1.Rows.Clear();  // Clear existing rows
-
-            foreach (SanPham sp in danhsachsanpham)
+            if(e.RowIndex >= 0)
             {
-                tb1.Rows.Add(sp.MaSP, sp.TenSP, sp.DonGia, sp.HinhAnh, sp.MoTaNgan, sp.MoTaChiTiet, sp.LoaiSP);
+                QuanLySinhVien selectedSinhVien = lst[e.RowIndex];
+                txtMa.Text = selectedSinhVien.MaSV;
+                txtTen.Text = selectedSinhVien.HoTen;
+                txtNgaysinh.Text = selectedSinhVien.NgaySinh;
+                txtDiachi.Text = selectedSinhVien.DiaChi;
+                txtEmail.Text = selectedSinhVien.Email;
+                cbGioitinh.Text = selectedSinhVien.GioiTinh;
+                cbKhoa.Text = selectedSinhVien.Khoa;
+                txtSdt.Text = selectedSinhVien.Sdt;
+            }
+            else
+            {
+                MessageBox.Show("Vui lòng chọn hàng.");
             }
         }
 
-        // Hàm chọn hàng cuối cùng sau khi thêm sản phẩm
-        private void SelectLastRow()
+        private void btnSua_Click(object sender, EventArgs e)
         {
-            if (tb1.Rows.Count > 0)
+            // Kiểm tra nếu có hàng nào được chọn trong DataGridView
+            if (dataGridView1.SelectedRows.Count > 0)
             {
-                tb1.ClearSelection();  // Clear current selection
-                tb1.Rows[tb1.Rows.Count - 1].Selected = true;  // Select last row
+                // Lấy chỉ số hàng đã chọn
+                int rowIndex = dataGridView1.SelectedRows[0].Index;
+                // Kiểm tra dữ liệu hợp lệ
+                if (KiemTraDuLieu())
+                {
+                    // Cập nhật thông tin sinh viên
+                    QuanLySinhVien selectedStudent = lst[rowIndex];
+                    selectedStudent.MaSV = txtMa.Text;
+                    selectedStudent.HoTen = txtTen.Text;
+                    selectedStudent.NgaySinh = txtNgaysinh.Text;
+                    selectedStudent.GioiTinh = cbGioitinh.Text;
+                    selectedStudent.Khoa = cbKhoa.Text;
+                    selectedStudent.DiaChi = txtDiachi.Text;
+                    selectedStudent.Email = txtEmail.Text;
+                    selectedStudent.Sdt = txtSdt.Text;
+                    // Cập nhật DataGridView
+                    dataGridView1.DataSource = null; 
+                    dataGridView1.DataSource = lst; 
+                    MessageBox.Show("Thông tin sinh viên đã được cập nhật.");
+                }
             }
+            else
+            {
+                MessageBox.Show("Vui lòng chọn một sinh viên để sửa.");
+            }
+
         }
 
-        private void btnXoa_Click_1(object sender, EventArgs e)
+        private void btnXoa_Click(object sender, EventArgs e)
         {
-
+            if(dataGridView1.SelectedRows.Count > 0)
+            {
+                int RowIndex = dataGridView1.SelectedRows[0].Index;
+                QuanLySinhVien sv = lst[RowIndex];
+                lst.Remove(sv);
+                dataGridView1.DataSource = null;
+                dataGridView1.DataSource = lst;
+                MessageBox.Show("Đã xóa sinh viên.");
+            }
+            else
+            {
+                MessageBox.Show("Vui lòng chọn hàng để xóa");
+            }
         }
     }
 }
