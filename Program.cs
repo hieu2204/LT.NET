@@ -4,7 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
-namespace QuanLyThongTinSinhVien
+namespace KiemTra01
 {
     internal static class Program
     {
@@ -16,7 +16,7 @@ namespace QuanLyThongTinSinhVien
         {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new Form1());
+            Application.Run(new ShoppingCart());
         }
     }
 }
