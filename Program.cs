@@ -4,7 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
-namespace KiemTra01
+namespace QuanLySP
 {
     internal static class Program
     {
@@ -16,7 +16,7 @@ namespace KiemTra01
         {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new ShoppingCart());
+            Application.Run(new QuanLySP());
         }
     }
 }
